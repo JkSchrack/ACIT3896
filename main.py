@@ -11,11 +11,11 @@ def nurseRosterPopulator():
         nurseRoster.append(nurseData)
 
 
-def availability(day, shift, nurseRoster):
+def availability(day, shift, roster):
     tempAvailableNurses = []
-    for n in range(len(nurseRoster)):
-        nursesInfo = nurses[nurseRoster[n][0]]
-        nurse = nurseRoster[n]
+    for n in range(len(roster)):
+        nursesInfo = nurses[roster[n][0]]
+        nurse = roster[n]
         if nurse[2] < 36 and nurse[3] == 0:
             if day not in nursesInfo["prefDays"]:
                 nurse[1] += 3
@@ -36,21 +36,21 @@ def pointSorter(unsortedNurses):
     return unsortedNurses
 
 
-def updateRoster(nurse1, nurse2, nurseRoster):
-    for i in range(len(nurseRoster)):
-        nurse = nurseRoster[i]
+def updateRoster(nurse1, nurse2, roster):
+    for i in range(len(roster)):
+        nurse = roster[i]
         if nurse[0] == nurse1[0] or nurse[0] == nurse2[0]:
-            nurseRoster[i][2] += 12
-            nurseRoster[i][3] += 1
-        elif nurseRoster[i][3] > 0:
-            nurseRoster[i][3] += 1
-        if nurseRoster[i][3] == 2:
-            nurseRoster[i][3] = 0
-        nurseRoster[i][1] = 0
-    return nurseRoster
+            roster[i][2] += 12
+            roster[i][3] += 1
+        elif roster[i][3] > 0:
+            roster[i][3] += 1
+        if roster[i][3] == 2:
+            roster[i][3] = 0
+        roster[i][1] = 0
+    return roster
 
 
-def assign(day, shift, nurse1, nurse2, nurseRoster):
+def assign(day, shift, nurse1, nurse2, roster):
     pointValue = nurse1[1] + nurse2[1]
     if nurse1[0] in nurses[nurse2[0]]["prefCoworkers"]:
         pointValue -= 1
@@ -58,7 +58,7 @@ def assign(day, shift, nurse1, nurse2, nurseRoster):
         pointValue -= 1
     schedule["PointValue"] += pointValue
     schedule[day][shift] = [pointValue, nurse1[0], nurse2[0]]
-    updatedNurses = updateRoster(nurse1, nurse2, nurseRoster)
+    updatedNurses = updateRoster(nurse1, nurse2, roster)
     if shift == "Day":
         shift = "Night"
     else:
@@ -72,17 +72,17 @@ def assign(day, shift, nurse1, nurse2, nurseRoster):
     return temp
 
 
-def week(day, shift, nurseRoster):
+def week(day, shift, roster):
     for i in range(len(days)):
         for n in range(len(shifts)):
-            availableNurses = availability(day, shift, nurseRoster)
+            availableNurses = availability(day, shift, roster)
             sortedNurses = pointSorter(availableNurses)
             nurse1 = sortedNurses[0]
             nurse2 = sortedNurses[1]
-            temp = assign(day, shift, nurse1, nurse2, nurseRoster)
+            temp = assign(day, shift, nurse1, nurse2, roster)
             day = temp[0]
             shift = temp[1]
-            nurseRoster = temp[2]
+            roster = temp[2]
 
 
 if __name__ == "__main__":
