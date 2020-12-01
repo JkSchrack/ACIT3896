@@ -85,6 +85,9 @@ def week(day, shift, roster):
             roster = temp[2]
 
 
+
+
+
 if __name__ == "__main__":
     nurses = nurses.nurses
     schedule = schedule.schedule
@@ -97,6 +100,13 @@ if __name__ == "__main__":
     nurseRosterPopulator()
 
     week("Mon", "Day", nurseRoster)
-    print(schedule)
+    print(schedule["PointValue"])
+    print(schedule["Mon"])
+    print(schedule["Tues"])
+    print(schedule["Wed"])
+    print(schedule["Thur"])
+    print(schedule["Fri"])
+    print(schedule["Sat"])
+    print(schedule["Sun"])
 
     print("Hello World!")
