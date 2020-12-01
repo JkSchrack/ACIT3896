@@ -17,9 +17,9 @@ def availability(day, shift, roster):
         nursesInfo = nurses[roster[n][0]]
         nurse = roster[n]
         if nurse[2] < 36 and nurse[3] == 0:
-            if day not in nursesInfo["prefDays"]:
+            if day not in nursesInfo["prefDays"] and nursesInfo["prefDays"] != []:
                 nurse[1] += 3
-            if shift not in nursesInfo["prefShift"]:
+            if shift != nursesInfo["prefShift"] and nursesInfo["prefShift"] != '':
                 nurse[1] += 2
             nurse[1] += 1
             tempAvailableNurses.append(nurse)
