@@ -1,9 +1,8 @@
 schedule = {
-    'PointValue': 0,
     'Mon': {
-            'PointValue': 0,
-            'Day': [],
-            'Night': [],
+        'PointValue': 0,
+        'Day': [],
+        'Night': [],
     },
     'Tues': {
         'PointValue': 0,
@@ -35,4 +34,5 @@ schedule = {
         'Day': [],
         'Night': [],
     },
+    'PointValue': 0
 }
