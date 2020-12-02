@@ -1,7 +1,7 @@
 nurses = {
     '111111': {
         'NurseID': '111111',
-        'Name': 'Bobby Bob',
+        'Name': 'Radicalized Ryan',
         'prefDays': ['Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'],
         'prefShift': '',
         'prefCoworkers': ['222222', '333333'],
@@ -14,7 +14,7 @@ nurses = {
         'prefCoworkers': ['111111', '222222', '123123'],
     },
     '123123': {
-        'NurseID': '222222',
+        'NurseID': '123123',
         'Name': 'Jimmy Junior',
         'prefDays': ['Mon', 'Wed', 'Fri', 'Sun'],
         'prefShift': '',
@@ -112,7 +112,7 @@ nurses = {
         'prefCoworkers': ['455555', '800835'],
     },
     '902100': {
-        'NurseID': '090210',
+        'NurseID': '902100',
         'Name': 'Inuit Igor',
         'prefDays': ['Mon', 'Tues', 'Fri', 'Sat'],
         'prefShift': '',
