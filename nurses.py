@@ -1,7 +1,7 @@
 nurses = {
     '111111': {
         'NurseID': '111111',
-        'Name': 'Bobby Bob',
+        'Name': 'Radicalized Ryan',
         'prefDays': ['Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'],
         'prefShift': '',
         'prefCoworkers': ['222222', '333333'],
