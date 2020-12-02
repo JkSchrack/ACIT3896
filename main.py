@@ -1,7 +1,7 @@
 import nurses
 import schedule
 import copy
-
+import random
 
 def nurseRosterPopulator():
     # Populates nurseRoster Array with nurses information
@@ -53,7 +53,10 @@ def pointSorter(availableNurses):
         for n in range(i, len(availableNurses)):
             if availableNurses[n][1] < availableNurses[i][1]:
                 tempNurse = availableNurses[i]
+                tempIdx = nurseIndex[availableNurses[i][0]]
+                nurseIndex[availableNurses[i][0]] = nurseIndex[availableNurses[n][0]]
                 availableNurses[i] = availableNurses[n]
+                nurseIndex[availableNurses[n][0]] = tempIdx
                 availableNurses[n] = tempNurse
     return availableNurses
 
@@ -101,9 +104,12 @@ def assign(day, shift, nurse1, nurse2, roster):
 
 
 def tabu(day, shift, originalSchedule, initialRoster):
-    tabuList = []
+    best = copy.deepcopy(originalSchedule)
     tempSchedule = originalSchedule
-    while len(tabuList) < 10:
+    previousSchedule = []
+    count = 0
+    while previousSchedule != tempSchedule:
+        previousSchedule = copy.deepcopy(tempSchedule)
         tempSchedule["PointValue"] = 0
         roster = copy.deepcopy(initialRoster)
         for i in range(len(days)):
@@ -114,22 +120,24 @@ def tabu(day, shift, originalSchedule, initialRoster):
                 nurse2 = tempSchedule[day][shift][2]
                 check1 = False
                 check2 = False
-                for nurse in sortedNurses:
-                    if nurse[0] == nurse1:
-                        nurse1 = nurse
+                if nurse1 in nurseIndex:
+                    nurse1 = sortedNurses[nurseIndex[nurse1]]
+                    check1 = True
+                if nurse2 in nurseIndex:
+                    nurse2 = sortedNurses[nurseIndex[nurse2]]
+                    check2 = True
+                while not check1:
+                    tempNurse = sortedNurses[random.randint(0, len(sortedNurses))]
+                    if tempNurse != nurse2:
+                        nurse1 = tempNurse
                         check1 = True
-                    elif nurse[0] == nurse2:
-                        nurse2 = nurse
+                        print("check1")
+                while not check2:
+                    tempNurse = sortedNurses[random.randint(0, len(sortedNurses))]
+                    if tempNurse != nurse1:
+                        nurse2 = tempNurse
                         check2 = True
-                if check1 == False or check2 == False:
-                    for nurse in sortedNurses:
-                        if nurse[0] != nurse1 and nurse[0] != nurse2:
-                            if not check1:
-                                nurse1 = nurse
-                                check1 = True
-                            elif not check2:
-                                nurse2 = nurse
-                                check2 = True
+                        print("check2")
                 pointValue = nurse1[1] + nurse2[1]
                 if nurse1[0] in nurses[nurse2[0]]["prefCoworkers"]:
                     pointValue -= 1
@@ -161,17 +169,9 @@ def tabu(day, shift, originalSchedule, initialRoster):
                                 nurse2 = nurse2
                                 pointValue = nurse[1] + nurse2[1] - 1
                 day, shift, roster, tempSchedule = reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule)
-        print(day)
-        print(shift)
-        print(tempSchedule["PointValue"])
-        print(tempSchedule["Mon"])
-        print(tempSchedule["Tues"])
-        print(tempSchedule["Wed"])
-        print(tempSchedule["Thur"])
-        print(tempSchedule["Fri"])
-        print(tempSchedule["Sat"])
-        print(tempSchedule["Sun"])
-        print("\n\n")
+        if tempSchedule["PointValue"] < best["PointValue"]:
+            best = copy.deepcopy(tempSchedule)
+    return best
 
 
 def reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule):
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     week("Mon", "Day", copy.deepcopy(nurseRoster))
 
-    tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
+    best = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
 
     print(schedule["PointValue"])
     print(schedule["Mon"])
@@ -220,5 +220,14 @@ if __name__ == "__main__":
     print(schedule["Fri"])
     print(schedule["Sat"])
     print(schedule["Sun"])
+
+    print(best["PointValue"])
+    print(best["Mon"])
+    print(best["Tues"])
+    print(best["Wed"])
+    print(best["Thur"])
+    print(best["Fri"])
+    print(best["Sat"])
+    print(best["Sun"])
 
     print("Hello World!")
