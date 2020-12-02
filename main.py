@@ -107,7 +107,6 @@ def tabu(day, shift, originalSchedule, initialRoster):
     best = copy.deepcopy(originalSchedule)
     tempSchedule = originalSchedule
     previousSchedule = []
-    count = 0
     while previousSchedule != tempSchedule:
         previousSchedule = copy.deepcopy(tempSchedule)
         tempSchedule["PointValue"] = 0
@@ -192,9 +191,164 @@ def reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule):
     return temp
 
 
-def stopCondition(best):
-    if best == 0:
-        return True
+
+# Returns False if check does not pass
+# True if passes
+def schedule_check(schedule_to_check):
+    nurseDictionary = {}
+    for i in nurses:
+        nurseDictionary[i] = 0  # Hours worked, worked recently
+
+    for index, key in enumerate(schedule_to_check):
+        if key != 'PointValue':
+            dayShift = schedule_to_check[key]['Day']
+            nightShift = schedule_to_check[key]['Night']
+            # make day 1 not check previous
+            # if day, check night and previous night
+
+            nurseDictionary[dayShift[1]] += 12
+            nurseDictionary[dayShift[2]] += 12
+            # day hours check 1
+            if nurseDictionary[dayShift[1]] > 36:
+                return False
+            # day hours check 2
+            if nurseDictionary[dayShift[2]] > 36:
+                return False
+
+            # recent check
+            if index != 0:
+                if dayShift[1] in schedule_to_check[days[index - 1]]['Night'] or dayShift[1] in nightShift:
+                    return False
+                if dayShift[2] in schedule_to_check[days[index - 1]]['Night'] or dayShift[2] in nightShift:
+                    return False
+
+            # if night, check day and next day (edge case of sunday)
+            nurseDictionary[nightShift[1]] += 12
+            nurseDictionary[nightShift[2]] += 12
+            # night hours check 1
+            if nurseDictionary[nightShift[1]] > 36:
+                return False
+            # night hours check 2
+            if nurseDictionary[nightShift[2]] > 36:
+                return False
+            # recent check
+            # on Sunday
+            if index == 6:
+                if nightShift[1] in dayShift:  # or nightShift[1] in schedule_to_check['Mon']['Day']:
+                    return False
+                if nightShift[2] in dayShift:  # or nightShift[2] in schedule_to_check['Mon']['Day']:
+                    return False
+            # every other day
+            else:
+                # if in today's DAY or tomorrow's DAY
+                if nightShift[1] in dayShift or nightShift[1] in schedule_to_check[days[index + 1]]['Day']:
+                    return False
+                if nightShift[2] in dayShift or nightShift[2] in schedule_to_check[days[index + 1]]['Day']:
+                    return False
+    return True
+
+
+# Replaces old at day-shift-pos with newNurse
+def replace_nurse(target_schedule, day, shift, newNurse, pos):
+    target_schedule[day][shift][pos] = newNurse[0]
+
+
+# gets total points for
+def pv_prefCoworker(nurse1, nurse2):
+    pv = 0
+    if nurse2 not in nurses[nurse1]['prefCoworkers'] and nurses[nurse1]['prefCoworkers'] != []:
+        # print(nurse1 + ' doesnt prefer ' + nurse2)
+        pv += 1
+    if nurse1 not in nurses[nurse2]['prefCoworkers'] and nurses[nurse2]['prefCoworkers'] != []:
+        # print(nurse2 + ' doesnt prefer ' + nurse1)
+        pv += 1
+    return pv
+
+
+def pv_prefDaysShifts(day, shift, nurse):
+    pv = 0
+    if day not in nurses[nurse]['prefDays'] and nurses[nurse]['prefDays'] != []:
+        # print(nurse + ' doesnt prefer ' + day)
+        pv += 3
+    if shift != nurses[nurse]['prefShift'] and nurses[nurse]['prefShift'] != '':
+        # print(nurse + ' doesnt prefer ' + shift)
+        pv += 2
+    return pv
+
+
+def set_pv_schedule(target_schedule):
+    totalPv = 0
+    for i in range(0, len(days)):
+        dayPv = 0
+        for n in range(0, len(shifts)):
+            target_shift = target_schedule[days[i]][shifts[n]]
+            # print("current day: {}, current shift: {}".format(days[i], shifts[n]))
+            nurse1 = target_shift[1]
+            nurse2 = target_shift[2]
+            dayPv += pv_prefCoworker(nurse1, nurse2)
+            dayPv += pv_prefDaysShifts(days[i], shifts[n], nurse1)
+            dayPv += pv_prefDaysShifts(days[i], shifts[n], nurse2)
+            # print("current day: {}, current shift: {}, pv: {}".format(days[i], shifts[n], dayPv))
+        totalPv += dayPv
+        target_schedule[days[i]]['PointValue'] = dayPv
+    target_schedule['PointValue'] = totalPv
+
+
+def genetic(target_schedule):
+    best = target_schedule['PointValue']
+    bestSchedule = copy.deepcopy(target_schedule)
+    testSchedule = copy.deepcopy(target_schedule)
+    iterations = 0
+    errorCheck = 0
+    rosterSize = len(nurseRoster)
+    while iterations < 1000 and errorCheck < 20:
+        # print("Current Schedule: ", testSchedule)
+        lastSchedule = copy.deepcopy(bestSchedule)
+        nurse1 = nurseRoster[random.randrange(0, rosterSize)]
+        nurse2 = nurseRoster[random.randrange(0, rosterSize)]
+        while nurse2 == nurse1:
+            nurse2 = nurseRoster[random.randrange(0, rosterSize)]
+        swap = False
+        for i in range(0, len(days)):
+            for n in range(0, len(shifts)):
+                rand = random.randint(0, 1)
+                if rand == 1:
+                    nurse = testSchedule[days[i]][shifts[n]][n + 1]
+
+                    # print("Iteration Nurse: {}, nurse1: {}, nurse2: {}".format(nurse, nurse1[0], nurse2[0]))
+                    if nurse == nurse1[0]:
+                        # switch in original schedule
+                        # genetic algorithm replace
+                        # print("Replacing: {} with {} at day: {} shift: {} pos: {}".format(nurse, nurse2[0], days[i],
+                                                                                          # shifts[n], n+1))
+                        # print("Before: ", currentSchedule)
+                        replace_nurse(testSchedule, days[i], shifts[n], nurse2, n + 1)
+                        # print("After: ", currentSchedule)
+                        swap = True
+                    elif nurse == nurse2[0]:
+                        # print("Replacing: {} with {} at day: {} shift: {} pos: {}".format(nurse, nurse1[0], days[i],
+                                                                                          # shifts[n], n + 1))
+                        # print("Before: ", currentSchedule)
+                        replace_nurse(testSchedule, days[i], shifts[n], nurse1, n + 1)
+                        # print("After: ", currentSchedule)
+                        swap = True
+
+        if schedule_check(testSchedule) and swap:
+            set_pv_schedule(testSchedule)
+            iterations += 1
+            errorCheck = 0
+            if testSchedule['PointValue'] < best:
+                best = testSchedule['PointValue']
+                # print("New best: {}".format(best))
+                bestSchedule = copy.deepcopy(testSchedule)
+        elif schedule_check(testSchedule) and not swap:
+            testSchedule = copy.deepcopy(lastSchedule)
+            continue
+        else:
+            # print("Bad: ", currentSchedule)
+            errorCheck += 1
+            testSchedule = copy.deepcopy(lastSchedule)
+    return bestSchedule
 
 
 if __name__ == "__main__":
@@ -210,7 +364,9 @@ if __name__ == "__main__":
 
     week("Mon", "Day", copy.deepcopy(nurseRoster))
 
-    best = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
+    tomato = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
+
+    gen = genetic(copy.deepcopy(tomato))
 
     print(schedule["PointValue"])
     print(schedule["Mon"])
@@ -221,13 +377,20 @@ if __name__ == "__main__":
     print(schedule["Sat"])
     print(schedule["Sun"])
 
-    print(best["PointValue"])
-    print(best["Mon"])
-    print(best["Tues"])
-    print(best["Wed"])
-    print(best["Thur"])
-    print(best["Fri"])
-    print(best["Sat"])
-    print(best["Sun"])
+    print(tomato["PointValue"])
+    print(tomato["Mon"])
+    print(tomato["Tues"])
+    print(tomato["Wed"])
+    print(tomato["Thur"])
+    print(tomato["Fri"])
+    print(tomato["Sat"])
+    print(tomato["Sun"])
 
-    print("Hello World!")
+    print(gen["PointValue"])
+    print(gen["Mon"])
+    print(gen["Tues"])
+    print(gen["Wed"])
+    print(gen["Thur"])
+    print(gen["Fri"])
+    print(gen["Sat"])
+    print(gen["Sun"])
