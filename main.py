@@ -281,13 +281,19 @@ def set_pv_schedule(target_schedule):
     for i in range(0, len(days)):
         dayPv = 0
         for n in range(0, len(shifts)):
+            shiftPv = 0
             target_shift = target_schedule[days[i]][shifts[n]]
             # print("current day: {}, current shift: {}".format(days[i], shifts[n]))
             nurse1 = target_shift[1]
             nurse2 = target_shift[2]
-            dayPv += pv_prefCoworker(nurse1, nurse2)
-            dayPv += pv_prefDaysShifts(days[i], shifts[n], nurse1)
-            dayPv += pv_prefDaysShifts(days[i], shifts[n], nurse2)
+            pv1 = pv_prefCoworker(nurse1, nurse2)
+            pv2 = pv_prefDaysShifts(days[i], shifts[n], nurse1)
+            pv3 = pv_prefDaysShifts(days[i], shifts[n], nurse2)
+            dayPv += pv1
+            dayPv += pv2
+            dayPv += pv3
+            shiftPv = pv1 + pv2 + pv3
+            target_schedule[days[i]][shifts[n]][0] = shiftPv
             # print("current day: {}, current shift: {}, pv: {}".format(days[i], shifts[n], dayPv))
         totalPv += dayPv
         target_schedule[days[i]]['PointValue'] = dayPv
@@ -314,7 +320,6 @@ def genetic(target_schedule):
                 rand = random.randint(0, 1)
                 if rand == 1:
                     nurse = testSchedule[days[i]][shifts[n]][n + 1]
-
                     # print("Iteration Nurse: {}, nurse1: {}, nurse2: {}".format(nurse, nurse1[0], nurse2[0]))
                     if nurse == nurse1[0]:
                         # switch in original schedule
