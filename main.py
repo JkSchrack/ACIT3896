@@ -3,6 +3,7 @@ import schedule
 import copy
 import random
 
+
 def nurseRosterPopulator():
     # Populates nurseRoster Array with nurses information
     count = 0
@@ -38,7 +39,7 @@ def availability(day, shift, roster):
             if shift != nursesInfo["prefShift"] and nursesInfo["prefShift"] != '':
                 # Penalty if shift is not preferred and preferred shifts is not empty
                 nurse[1] += 2
-            if nursesInfo["prefCoworkers"] != []:
+            if nursesInfo["prefCoworkers"]:
                 # Pre-apply coworker penalty
                 nurse[1] += 1
             availableNurses.append(nurse)
@@ -165,7 +166,8 @@ def tabu(day, shift, originalSchedule, initialRoster):
                                 nurse1 = nurse
                                 nurse2 = nurse2
                                 pointValue = nurse[1] + nurse2[1] - 1
-                day, shift, roster, tempSchedule = reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule)
+                day, shift, roster, tempSchedule = reassign(day, shift, nurse1, nurse2, roster, pointValue,
+                                                            tempSchedule)
         if tempSchedule["PointValue"] < best["PointValue"]:
             best = copy.deepcopy(tempSchedule)
     return best
@@ -187,7 +189,6 @@ def reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule):
             shift = "Day"
     temp = [day, shift, updatedNurses, tempSchedule]
     return temp
-
 
 
 # Returns False if check does not pass
@@ -279,7 +280,6 @@ def set_pv_schedule(target_schedule):
     for i in range(0, len(days)):
         dayPv = 0
         for n in range(0, len(shifts)):
-            shiftPv = 0
             target_shift = target_schedule[days[i]][shifts[n]]
             # print("current day: {}, current shift: {}".format(days[i], shifts[n]))
             nurse1 = target_shift[1]
@@ -305,8 +305,7 @@ def genetic(target_schedule):
     iterations = 0
     errorCheck = 0
     rosterSize = len(nurseRoster)
-    while iterations < 1000 and errorCheck < 20:
-        # print("Current Schedule: ", testSchedule)
+    while iterations < 1000 and errorCheck < 10:
         lastSchedule = copy.deepcopy(bestSchedule)
         nurse1 = nurseRoster[random.randrange(0, rosterSize)]
         nurse2 = nurseRoster[random.randrange(0, rosterSize)]
@@ -318,37 +317,24 @@ def genetic(target_schedule):
                 rand = random.randint(0, 1)
                 if rand == 1:
                     nurse = testSchedule[days[i]][shifts[n]][n + 1]
-                    # print("Iteration Nurse: {}, nurse1: {}, nurse2: {}".format(nurse, nurse1[0], nurse2[0]))
                     if nurse == nurse1[0]:
                         # switch in original schedule
-                        # genetic algorithm replace
-                        # print("Replacing: {} with {} at day: {} shift: {} pos: {}".format(nurse, nurse2[0], days[i],
-                                                                                          # shifts[n], n+1))
-                        # print("Before: ", currentSchedule)
                         replace_nurse(testSchedule, days[i], shifts[n], nurse2, n + 1)
-                        # print("After: ", currentSchedule)
                         swap = True
                     elif nurse == nurse2[0]:
-                        # print("Replacing: {} with {} at day: {} shift: {} pos: {}".format(nurse, nurse1[0], days[i],
-                                                                                          # shifts[n], n + 1))
-                        # print("Before: ", currentSchedule)
                         replace_nurse(testSchedule, days[i], shifts[n], nurse1, n + 1)
-                        # print("After: ", currentSchedule)
                         swap = True
-
         if schedule_check(testSchedule) and swap:
             set_pv_schedule(testSchedule)
             iterations += 1
             errorCheck = 0
             if testSchedule['PointValue'] < best:
                 best = testSchedule['PointValue']
-                # print("New best: {}".format(best))
                 bestSchedule = copy.deepcopy(testSchedule)
         elif schedule_check(testSchedule) and not swap:
             testSchedule = copy.deepcopy(lastSchedule)
             continue
         else:
-            # print("Bad: ", currentSchedule)
             errorCheck += 1
             testSchedule = copy.deepcopy(lastSchedule)
     return bestSchedule
@@ -367,9 +353,9 @@ if __name__ == "__main__":
 
     week("Mon", "Day", copy.deepcopy(nurseRoster))
 
-    gen = genetic(copy.deepcopy(schedule))
-    tomato = tabu("Mon", "Day", copy.deepcopy(gen), copy.deepcopy(nurseRoster))
+    tomato = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
 
+    gen = genetic(copy.deepcopy(tomato))
 
     print(schedule["PointValue"])
     print(schedule["Mon"])
