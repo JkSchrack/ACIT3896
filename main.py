@@ -125,18 +125,16 @@ def tabu(day, shift, originalSchedule, initialRoster):
                 if nurse2 in nurseIndex:
                     nurse2 = sortedNurses[nurseIndex[nurse2]]
                     check2 = True
-                while not check1:
+                while not check1 or nurse1 == nurse2:
                     tempNurse = sortedNurses[random.randint(0, len(sortedNurses))]
                     if tempNurse != nurse2:
                         nurse1 = tempNurse
                         check1 = True
-                        print("check1")
-                while not check2:
+                while not check2 or nurse1 == nurse2:
                     tempNurse = sortedNurses[random.randint(0, len(sortedNurses))]
                     if tempNurse != nurse1:
                         nurse2 = tempNurse
                         check2 = True
-                        print("check2")
                 pointValue = nurse1[1] + nurse2[1]
                 if nurse1[0] in nurses[nurse2[0]]["prefCoworkers"]:
                     pointValue -= 1
@@ -369,9 +367,9 @@ if __name__ == "__main__":
 
     week("Mon", "Day", copy.deepcopy(nurseRoster))
 
-    tomato = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
+    gen = genetic(copy.deepcopy(schedule))
+    tomato = tabu("Mon", "Day", copy.deepcopy(gen), copy.deepcopy(nurseRoster))
 
-    gen = genetic(copy.deepcopy(tomato))
 
     print(schedule["PointValue"])
     print(schedule["Mon"])
