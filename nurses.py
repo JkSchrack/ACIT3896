@@ -1,6 +1,6 @@
 nurses = {
-    '000001': {
-        'NurseID': '000001',
+    '100001': {
+        'NurseID': '100001',
         'Name': 'Bob Dole',
         'prefDays': ['Tues', 'Fri', 'Sat', 'Sun'],
         'prefShift': 'Night',
@@ -11,14 +11,14 @@ nurses = {
         'Name': 'Radicalized Ryan',
         'prefDays': ['Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'],
         'prefShift': '',
-        'prefCoworkers': ['222222', '333333', '069420', '752888', '000001'],
+        'prefCoworkers': ['222222', '333333', '069420', '752888', '100001'],
     },
     '111511': {
         'NurseID': '111511',
         'Name': 'Sugma Sally',
         'prefDays': ['Mon', 'Thur', 'Fri'],
         'prefShift': '',
-        'prefCoworkers': ['000001', '800835', '101101', '879123'],
+        'prefCoworkers': ['100001', '800835', '101101', '879123'],
     },
     '222222': {
         'NurseID': '222222',
@@ -46,7 +46,7 @@ nurses = {
         'Name': 'Gunther Biggums',
         'prefDays': ['Mon', 'Wed', 'Fri', 'Sat'],
         'prefShift': '',
-        'prefCoworkers': ['879123',' 588312', '000001'],
+        'prefCoworkers': ['879123',' 588312', '000001', '250578'],
     },
     '555555': {
         'NurseID': '555555',
@@ -207,7 +207,7 @@ nurses = {
         'Name': 'Danny Smokes',
         'prefDays': ['Mon', 'Thur', 'Fri'],
         'prefShift': 'Night',
-        'prefCoworkers': [],
+        'prefCoworkers': ['879123', '676767', '455555', '555555', '111511'],
     },
     '964222': {
         'NurseID': '964222',
