@@ -2,6 +2,7 @@ import nurses
 import schedule
 import copy
 import random
+import matplotlib.pyplot as plt
 
 
 def nurseRosterPopulator():
@@ -108,6 +109,7 @@ def tabu(day, shift, originalSchedule, initialRoster):
     best = copy.deepcopy(originalSchedule)
     tempSchedule = originalSchedule
     previousSchedule = []
+    bestpv = originalSchedule["PointValue"]
     while previousSchedule != tempSchedule:
         previousSchedule = copy.deepcopy(tempSchedule)
         tempSchedule["PointValue"] = 0
@@ -170,7 +172,8 @@ def tabu(day, shift, originalSchedule, initialRoster):
                                                             tempSchedule)
         if tempSchedule["PointValue"] < best["PointValue"]:
             best = copy.deepcopy(tempSchedule)
-    return best
+            bestpv = tempSchedule['PointValue']
+    return best, bestpv
 
 
 def reassign(day, shift, nurse1, nurse2, roster, pointValue, tempSchedule):
@@ -305,6 +308,7 @@ def genetic(target_schedule):
     iterations = 0
     errorCheck = 0
     rosterSize = len(nurseRoster)
+    pv = [best]
     while iterations < 1000 and errorCheck < 10:
         lastSchedule = copy.deepcopy(bestSchedule)
         nurse1 = nurseRoster[random.randrange(0, rosterSize)]
@@ -327,6 +331,7 @@ def genetic(target_schedule):
         if schedule_check(testSchedule) and swap:
             set_pv_schedule(testSchedule)
             iterations += 1
+            pv.append(testSchedule['PointValue'])
             errorCheck = 0
             if testSchedule['PointValue'] < best:
                 best = testSchedule['PointValue']
@@ -337,7 +342,7 @@ def genetic(target_schedule):
         else:
             errorCheck += 1
             testSchedule = copy.deepcopy(lastSchedule)
-    return bestSchedule
+    return bestSchedule, pv
 
 
 if __name__ == "__main__":
@@ -350,12 +355,19 @@ if __name__ == "__main__":
     shifts = ['Day', 'Night']
 
     nurseRosterPopulator()
-
     week("Mon", "Day", copy.deepcopy(nurseRoster))
 
-    tomato = tabu("Mon", "Day", copy.deepcopy(schedule), copy.deepcopy(nurseRoster))
+    gen = genetic(copy.deepcopy(schedule))
 
-    gen = genetic(copy.deepcopy(tomato))
+    tomato = tabu("Mon", "Day", copy.deepcopy(gen[0]), copy.deepcopy(nurseRoster))
+
+    # schedule["Mon"] = {'PointValue': 1, 'Day': [0, '879123', '444444'], 'Night': [1, '420420', '111111']}
+    # schedule["Tues"] = {'PointValue': 0, 'Day': [0, '800835', '555555'], 'Night': [0, '333333', '111111']}
+    # schedule["Wed"] = {'PointValue': 2, 'Day': [0, '444444', '879123'], 'Night': [2, '222222', '123123']}
+    # schedule["Thur"] = {'PointValue': 0, 'Day': [0, '800835', '555555'], 'Night': [0, '333333', '111111']}
+    # schedule["Fri"] = {'PointValue': 0, 'Day': [0, '444444', '879123'], 'Night': [0, '838383', '676767']}
+    # schedule["Sat"] = {'PointValue': 1, 'Day': [0, '800835', '555555'], 'Night': [1, '109237', '666666']}
+    # schedule["Sun"] = {'PointValue': 3, 'Day': [1, '173800', '777777'], 'Night': [2, '101101', '964222']}
 
     print(schedule["PointValue"])
     print(schedule["Mon"])
@@ -366,20 +378,29 @@ if __name__ == "__main__":
     print(schedule["Sat"])
     print(schedule["Sun"])
 
-    print(tomato["PointValue"])
-    print(tomato["Mon"])
-    print(tomato["Tues"])
-    print(tomato["Wed"])
-    print(tomato["Thur"])
-    print(tomato["Fri"])
-    print(tomato["Sat"])
-    print(tomato["Sun"])
+    print(tomato[0]["PointValue"])
+    print(tomato[0]["Mon"])
+    print(tomato[0]["Tues"])
+    print(tomato[0]["Wed"])
+    print(tomato[0]["Thur"])
+    print(tomato[0]["Fri"])
+    print(tomato[0]["Sat"])
+    print(tomato[0]["Sun"])
 
-    print(gen["PointValue"])
-    print(gen["Mon"])
-    print(gen["Tues"])
-    print(gen["Wed"])
-    print(gen["Thur"])
-    print(gen["Fri"])
-    print(gen["Sat"])
-    print(gen["Sun"])
+    print(gen[0]["PointValue"])
+    print(gen[0]["Mon"])
+    print(gen[0]["Tues"])
+    print(gen[0]["Wed"])
+    print(gen[0]["Thur"])
+    print(gen[0]["Fri"])
+    print(gen[0]["Sat"])
+    print(gen[0]["Sun"])
+
+    pv = gen[1]
+    pv.append(tomato[1])
+    print(min(pv), max(pv))
+    plt.xlabel('Valid Schedules')
+    plt.ylabel('Fitness Points')
+    plt.plot(pv)
+    plt.show()
+
